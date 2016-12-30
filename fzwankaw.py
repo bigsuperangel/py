@@ -11,6 +11,8 @@ from urllib.parse import quote
 import time
 from selenium import webdriver
 
+
+
 def urls():
     url = 'http://192.168.0.114:8000/?types=0&count=40'
     with request.urlopen(url) as f:
@@ -29,7 +31,7 @@ def post(ip,port):
     #mobile_emulation = {"deviceName": "Google Nexus 5"}
     #chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
     driver = webdriver.Chrome('F:\\chromedriver.exe', chrome_options=chrome_options)
-    driver.get("http://www.fzwankaw.com/?fromuid=52492")
+    driver.get("http://www.fzwankaw.com/?fromuser=nimabibi163")
     time.sleep(10)
     driver.quit()
 

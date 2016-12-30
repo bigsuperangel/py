@@ -11,6 +11,12 @@ from urllib.parse import quote
 import time
 from selenium import webdriver
 
+
+# types   int 0: 高匿代理, 1 透明
+# protocol    int 0: http, 1 https
+# count   int 数量
+# country str 国家
+# area    str 地区
 def urls():
     url = 'http://192.168.0.114:8000/?types=0&count=40'
     with request.urlopen(url) as f:
@@ -29,14 +35,15 @@ def post(ip,port):
     #mobile_emulation = {"deviceName": "Google Nexus 5"}
     #chrome_options.add_experimental_option("mobileEmulation", mobile_emulation)
     driver = webdriver.Chrome('F:\\chromedriver.exe', chrome_options=chrome_options)
-    driver.get("http://www.fzwankaw.com/?fromuid=52492")
+    # driver.get("http://www.fzwankaw.com/?fromuid=52492")
+    driver.get("http://www.fzwankaw.com/?fromuser=nimabibi163")
     time.sleep(10)
     driver.quit()
 
 def doPost(ip_ports):
     for i in range(40):
-        ip = ip_ports[40-i-1][0]
-        port = ip_ports[40-i-1][1]
+        ip = ip_ports[i][0]
+        port = ip_ports[i][1]
         post(ip, port)
 
 if __name__=='__main__':
