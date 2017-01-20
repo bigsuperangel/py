@@ -7,8 +7,12 @@ from sqlalchemy.orm import sessionmaker
 import os
 import json
 import requests
+import re
+from pyquery import PyQuery as pq
+from lxml import etree
 
 from ISqlHelper import ISqlHelper
+from mysqldb import MysqlDb
 
 def urls(p):
     url = 'http://gs.amac.org.cn/amac-infodisc/api/pof/manager'
@@ -23,6 +27,96 @@ def urls(p):
     r = requests.post(url,headers=headers,params=values,json=payload)
     print(r.status_code)
     return r.json()
+
+def managerUrl(href):
+    d = pq(url=os.path.join('http://gs.amac.org.cn/amac-infodisc/res/pof/manager/',href),encoding="utf-8")
+    L = []
+
+    L.append(os.path.splitext(href)[0])
+    # ### 基本资料
+    complaint = d("#complaint1").text()
+    L.append(complaint)
+    # print(complaint)
+
+    complaintETr=pq(d('tr').eq(3))
+    complaintE = complaintETr('.td-content').text()
+    L.append(complaintE)
+
+    # print(complaintE)
+
+    # registerNoTr = pq(d('tr').eq(4))
+    # registerNo = registerNoTr('.td-content').text()
+    # print(registerNo)
+
+    groupNoTr= pq(d('tr').eq(5))
+    groupNo = groupNoTr('.td-content').text()
+    L.append(groupNo)
+    # print(groupNo)
+
+    money = d('tr').eq(9)('.td-content')
+    for i in money.items():
+        L.append(i.text())
+
+    company = d('tr').eq(10)('.td-content')
+    for i in company.items():
+        L.append(i.text())
+    # print(company)
+
+    fund = d('tr').eq(11)('.td-content')
+    for i in fund.items():
+        L.append(i.text())
+    # print(fund)
+
+    person = d('tr').eq(12)('.td-content')
+    for i in person.items():
+        L.append(i.text())
+    # print(person)
+
+    # ### 法律意见
+    adviseTr = pq(d('tr').eq(17))
+    advise = adviseTr('.td-content').text()
+    L.append(advise)
+    # print(advise)
+    return L
+    # ### 高管介绍
+    # executivesTr = pq(d('tr').eq(19))
+    # executives = executivesTr('.td-content').text()
+    # print(executives)
+
+    # qualification = pq(d('tr').eq(20))('.td-content').text()
+    # print(qualification)
+
+    ### 工作履历
+    # resume = pq(d('tr').eq(21))('.table-center tbody tr')
+    # resumes = []
+    # for my_div in resume.items():
+    #     L = []
+    #     L.append(''.join(my_div('td').eq(0).text().replace('\r\n','').split(' ')))
+    #     L.append(my_div('td').eq(1).text())
+    #     L.append(my_div('td').eq(2).text())
+    #     resumes.append(L)
+    # print(resumes)
+
+    ####高管情况:
+    # situations = []
+    # situation = pq(d('tr').eq(21).next())('.table-center tbody tr')
+    # for my_div in situation.items():
+    #     L = []
+    #     L.append(''.join(my_div('td').eq(0).text().replace('\r\n','').split(' ')))
+    #     L.append(my_div('td').eq(1).text())
+    #     L.append(my_div('td').eq(2).text())
+    #     situations.append(L)
+    # print(situations)
+
+    # productB = d('tr').eq(21).next().next().next()
+    # for pb in productB.find('a').items():
+    #     print(pb.text())
+    #     print(pb.attr('href'))
+
+    # productA = productB.next()
+    # for pb in productA.find('a').items():
+    #     print(pb.text())
+    #     print(pb.attr('href'))
 
 DB_CONFIG={
 
@@ -192,14 +286,27 @@ class SqlHelper(ISqlHelper):
 if __name__=='__main__':
 
     sqlhelper = SqlHelper()
-    sqlhelper.init_db()
+    # sqlhelper.init_db()
+
+    #### 测试插入数据
     # proxy = {"id":"445","managerName":"厦门瑞泰和投资管理有限公司","artificialPersonName":"余万贵","registerNo":"P1001025","establishDate":1312329600000,"managerHasProduct":"false","url":"445.html","registerDate":1398124800000,"registerAddress":"福建省厦门市厦禾路302号2307室","registerProvince":"福建省","registerCity":"厦门市","regAdrAgg":"厦门市","fundCount":0,"fundScale":0,"paidInCapital":12433.7500,"subscribedCapital":12433.7500,"hasSpecialTips":"true","inBlacklist":"false","hasCreditTips":"true","regCoordinate":"24.466320743,118.086399644","officeCoordinate":"24.466320743,118.086399644","officeAddress":"福建省厦门市思明区厦禾路302号2307室","officeProvince":"福建省","officeCity":"厦门市","primaryInvestType":"证券投资基金"}
     # sqlhelper.insert(proxy)
 
-    pages = [x for x in range(8)]
-    for i in pages:
-        for x in urls(i)['content']:
-            sqlhelper.insert(x)
-        sqlhelper.commit()
+    ##### 批量拉取列表页
+    # pages = [x for x in range(8)]
+    # for i in pages:
+    #     for x in urls(i)['content']:
+    #         sqlhelper.insert(x)
+    #     sqlhelper.commit()
 
-    print(sqlhelper.select())
+    # print(sqlhelper.select(count=1))
+    record = sqlhelper.select(count=1)
+    url = record[0][1]
+    # url = "704.html"
+
+    data = managerUrl(url)
+    print(data)
+    mysqlDb = MysqlDb()
+
+    mysqlDb.insertTable(data)
+
