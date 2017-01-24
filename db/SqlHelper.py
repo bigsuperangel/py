@@ -4,119 +4,8 @@ from sqlalchemy import Column, Integer, String, DateTime, BigInteger,Boolean, Nu
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 #from config import DB_CONFIG
-import os
-import json
-import requests
-import re
-from pyquery import PyQuery as pq
-from lxml import etree
-
 from ISqlHelper import ISqlHelper
-from mysqldb import MysqlDb
-
-def urls(p):
-    url = 'http://gs.amac.org.cn/amac-infodisc/api/pof/manager'
-    user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-    values = {
-    'rand' : 0.9533140078801254,
-    'page' : p,
-    'size' : 50
-    }
-    headers = { 'User-Agent' : user_agent ,'content-type':'application/json'}
-    payload = {'registerProvince': '福建省'}
-    r = requests.post(url,headers=headers,params=values,json=payload)
-    print(r.status_code)
-    return r.json()
-
-def managerUrl(href):
-    d = pq(url=os.path.join('http://gs.amac.org.cn/amac-infodisc/res/pof/manager/',href),encoding="utf-8")
-    L = []
-
-    L.append(os.path.splitext(href)[0])
-    # ### 基本资料
-    complaint = d("#complaint1").text()
-    L.append(complaint)
-    # print(complaint)
-
-    complaintETr=pq(d('tr').eq(3))
-    complaintE = complaintETr('.td-content').text()
-    L.append(complaintE)
-
-    # print(complaintE)
-
-    # registerNoTr = pq(d('tr').eq(4))
-    # registerNo = registerNoTr('.td-content').text()
-    # print(registerNo)
-
-    groupNoTr= pq(d('tr').eq(5))
-    groupNo = groupNoTr('.td-content').text()
-    L.append(groupNo)
-    # print(groupNo)
-
-    money = d('tr').eq(9)('.td-content')
-    for i in money.items():
-        L.append(i.text())
-
-    company = d('tr').eq(10)('.td-content')
-    for i in company.items():
-        L.append(i.text())
-    # print(company)
-
-    fund = d('tr').eq(11)('.td-content')
-    for i in fund.items():
-        L.append(i.text())
-    # print(fund)
-
-    person = d('tr').eq(12)('.td-content')
-    for i in person.items():
-        L.append(i.text())
-    # print(person)
-
-    # ### 法律意见
-    adviseTr = pq(d('tr').eq(17))
-    advise = adviseTr('.td-content').text()
-    L.append(advise)
-    # print(advise)
-    return L
-    # ### 高管介绍
-    # executivesTr = pq(d('tr').eq(19))
-    # executives = executivesTr('.td-content').text()
-    # print(executives)
-
-    # qualification = pq(d('tr').eq(20))('.td-content').text()
-    # print(qualification)
-
-    ### 工作履历
-    # resume = pq(d('tr').eq(21))('.table-center tbody tr')
-    # resumes = []
-    # for my_div in resume.items():
-    #     L = []
-    #     L.append(''.join(my_div('td').eq(0).text().replace('\r\n','').split(' ')))
-    #     L.append(my_div('td').eq(1).text())
-    #     L.append(my_div('td').eq(2).text())
-    #     resumes.append(L)
-    # print(resumes)
-
-    ####高管情况:
-    # situations = []
-    # situation = pq(d('tr').eq(21).next())('.table-center tbody tr')
-    # for my_div in situation.items():
-    #     L = []
-    #     L.append(''.join(my_div('td').eq(0).text().replace('\r\n','').split(' ')))
-    #     L.append(my_div('td').eq(1).text())
-    #     L.append(my_div('td').eq(2).text())
-    #     situations.append(L)
-    # print(situations)
-
-    # productB = d('tr').eq(21).next().next().next()
-    # for pb in productB.find('a').items():
-    #     print(pb.text())
-    #     print(pb.attr('href'))
-
-    # productA = productB.next()
-    # for pb in productA.find('a').items():
-    #     print(pb.text())
-    #     print(pb.attr('href'))
+import os
 
 DB_CONFIG={
 
@@ -268,15 +157,15 @@ class SqlHelper(ISqlHelper):
         if len(conditions)>0 and count:
             for condition in conditions:
                 query = query.filter(condition)
-            return query.order_by(Proxy.id.desc()).limit(count).all()
+            return query.order_by(Proxy.id.asc()).limit(count).all()
         elif count:
-            return query.order_by(Proxy.id.desc()).limit(count).all()
+            return query.order_by(Proxy.id.asc()).limit(count).all()
         elif len(conditions)>0:
             for condition in conditions:
                 query = query.filter(condition)
-            return query.order_by(Proxy.id.desc()).all()
+            return query.order_by(Proxy.id.asc()).all()
         else:
-            return query.order_by(Proxy.id.desc()).all()
+            return query.order_by(Proxy.id.asc()).all()
 
 
 
@@ -299,14 +188,7 @@ if __name__=='__main__':
     #         sqlhelper.insert(x)
     #     sqlhelper.commit()
 
-    # print(sqlhelper.select(count=1))
-    record = sqlhelper.select(count=1)
-    url = record[0][1]
-    # url = "704.html"
+    print(sqlhelper.select(count=10))
 
-    data = managerUrl(url)
-    print(data)
-    mysqlDb = MysqlDb()
 
-    mysqlDb.insertTable(data)
 
