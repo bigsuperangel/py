@@ -91,7 +91,12 @@ class MysqlDb(object):
         self.cursor.close()
         self.conn.close()
 
-
+    def insertFund2(self,data):
+        # 插入一行记录，注意MySQL的占位符是%s:
+        self.cursor.execute('INSERT INTO tb_fund2 ( id, fundName, fundNo, establishDate, recordDate, step, fundType, currency, managerName,managerId, managerType, hostName, fundAreas, status, lastUpdate, tip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ', data)
+        print('tb_fund,rowcount =', self.cursor.rowcount)
+        # 提交事务:
+        self.conn.commit()
 
 if __name__=='__main__':
     mysqlDb = MysqlDb()

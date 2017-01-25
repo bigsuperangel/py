@@ -13,7 +13,7 @@ class Html_Downloader(object):
         self.manager_url = 'http://gs.amac.org.cn/amac-infodisc/res/pof/manager/'
         self.proxyUrl = proxy.urls()[random.randint(1,10)]
 
-    def download(self,url):
+    async def download(self,url):
         headers = config.HEADERS.copy()
         headers["Host"] = 'gs.amac.org.cn'
 

@@ -18,6 +18,7 @@ import time
 # area    str 地区
 def urls():
     url = 'http://192.168.0.114:8000/?types=0&count=40'
+    # url = 'http://104.224.145.43:8000/?types=0&count=40'
     with request.urlopen(url) as f:
         data = f.read()
         ip_ports = json.loads(data.decode('utf-8'))

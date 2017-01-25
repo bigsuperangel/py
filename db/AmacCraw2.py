@@ -2,10 +2,13 @@
 
 import os
 import random
-from multiprocessing import Queue, Process, Value,Pool
+from multiprocessing import Queue, Process, Value,Pool,Manager
 from Mysqldb import MysqlDb
 from HtmlDownloader import Html_Downloader
 from HtmlParser import Html_Parser
+from DataStore import store_data
+import asyncio
+import traceback
 
 class AmacCraw2(object):
     def __init__(self,queue):
@@ -22,7 +25,8 @@ class AmacCraw2(object):
                 L,resumes,situations,productA,productB = self.parser.parseManager(url,content)
                 print(L)
             except Exception as e:
-                print(e)
+                exstr = traceback.format_exc()
+                print(exstr)
 
     def crawFund(self,urls):
         for url in urls :
@@ -31,34 +35,66 @@ class AmacCraw2(object):
                 url,content = self.downloader.download(url)
                 data = self.parser.parseFund(url,content)
                 self.queue.put(data)
-                print(data)
+                # print(data)
             except Exception as e:
-                print(e)
+                exstr = traceback.format_exc()
+                print(exstr)
+
+    async def craw(self,url):
+        print("产品请求%s"%url)
+        try:
+            url,content = await self.downloader.download(url)
+            data = self.parser.parseFund(url,content)
+            self.queue.put(data)
+            print(data)
+        except Exception as e:
+            exstr = traceback.format_exc()
+            print(exstr)
 
 
 def run(queue, urls):
     craw = AmacCraw2(queue)
     return craw.crawFund(urls)
 
+def doCraw(queue,urls):
+    craw = AmacCraw2(queue)
+    loop = asyncio.get_event_loop()
+    tasks = [craw.craw(host) for host in urls]
+    loop.run_until_complete(asyncio.wait(tasks))
+    loop.close()
+
 if __name__=='__main__':
 
-    print('Parent process %s.' % os.getpid())
+
+
+    # print('Parent process %s.' % os.getpid())
+    # manager = Manager()
+    # q1 = manager.Queue()
     q1 = Queue()
     mysqlDb = MysqlDb()
-    records = mysqlDb.selectAllMP((0,5))
-    urls = set()
+    records = mysqlDb.selectAllMP((0,3))
+    urls = []
     for r in records:
-        print(r)
-        urls.add(r[1])
+        urls.append(r[1])
 
-    p1 = Process(target=run,args=(q1,urls))
+    p1 = Process(target=doCraw,args=(q1,urls))
+    p2 = Process(target=store_data,args=(q1,))
     p1.start()
+    p2.start()
 
-    # for i in range(5):
-    #     p.map(craw.crawFund,urls)
-    #     # p.apply_async(run, args=(q1,urls))
-    # print('Waiting for all subprocesses done...')
-    # p.close()
-    # p.join()
-    # print('All subprocesses done.')
+    # with Pool(processes=4) as pool:
+    #     multiple_results = [pool.apply_async(run, args=(q1,urls)) for i in range(4)]
+    #     print([res.get(timeout=1) for res in multiple_results])
+
+    # with Pool(processes=4) as p:
+    #     for i in range(4):
+    #         p.map(run,args=(q1,urls)
+    #         # p.apply_async(run, args=(q1,urls))
+
+    #     print('Waiting for all subprocesses done...')
+    #     p.close()
+    #     p.join()
+    #     print('All subprocesses done.')
+
+
 
