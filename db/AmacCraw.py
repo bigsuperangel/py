@@ -14,6 +14,8 @@ from SqlHelper import SqlHelper
 import multiprocessing
 from urllib import request
 import proxy
+import traceback
+
 
 class AmacCraw(object):
     def __init__(self):
@@ -186,7 +188,6 @@ class AmacCraw(object):
         for rec in productB:
             self.mysqlDb.insertMP(rec)
 
-        time.sleep(7+random.randint(1,5))
 
     def fundUrl(self,href):
         '''
@@ -260,9 +261,9 @@ class AmacCraw(object):
         result = self.mysqlDb.selectIsMp((pid,))
         return result
 
-    def craw(self):
+    def craw(self,condition):
         sqlhelper = SqlHelper()
-        record = sqlhelper.select(count=68)
+        record = sqlhelper.select2(condition)
         for r in record:
 
             print("请求%s"%r[0])
@@ -284,16 +285,12 @@ class AmacCraw(object):
             except Exception as e:
                 print(e)
 
-            time.sleep(3)
 
     def crawFunds(self,data):
         print(data)
-        records = self.findAllMp(data)
+        records = self.mysqlDb.selectAllMP(data)
         for r in records :
           self.crawFund(r[1],r[2])
-
-    def findAllMp(self,data):
-        return self.mysqlDb.selectAllMP(data)
 
     def testCraw(self,r):
         print("产品请求%s"%r[1])
@@ -302,6 +299,24 @@ class AmacCraw(object):
         except Exception as e:
             print(e)
 
+    def craw_list(self):
+        sqlHelper = SqlHelper()
+        count = 0
+        try:
+            for i in range(9):
+                data = craw.urls(i)
+                for x in data['content']:
+                    result = sqlHelper.select(conditions={'id':x['id']})
+                    if len(result)>0:
+                        continue
+                    else:
+                        sqlHelper.insert(x)
+                        count = count +1
+                sqlHelper.commit()
+            print("共新增tb_manager%s条"%count)
+        except Exception as e:
+            print(traceback.format_exc())
+
 def run(cls_instance, data):
     return cls_instance.crawFunds(data)
 
@@ -309,15 +324,26 @@ if __name__=='__main__':
 
     craw = AmacCraw()
     # craw.crawFunds((0,1000))
-    print('Parent process %s.' % os.getpid())
-    p = multiprocessing.Pool(multiprocessing.cpu_count())
-    records = craw.findAllMp((0,20))
+    # print('Parent process %s.' % os.getpid())
+    # p = multiprocessing.Pool(multiprocessing.cpu_count())
+    # records = craw.findAllMp((0,20))
 
-    for i in range(3):
-        p.map(craw.testCraw,records)
-        # p.apply_async(run, (craw, i*100,100))
-    print('Waiting for all subprocesses done...')
-    p.close()
-    p.join()
-    print('All subprocesses done.')
+    # for i in range(3):
+    #     p.map(craw.testCraw,records)
+    #     # p.apply_async(run, (craw, i*100,100))
+    # print('Waiting for all subprocesses done...')
+    # p.close()
+    # p.join()
+    # print('All subprocesses done.')
+
+    ### 处理list
+    # craw.craw_list()
+
+    ### 处理manager_detail,查询当天过后的新增数据
+    craw.craw('registerDate>1484611200000')
+    ### 处理fund
+
+
+
+
 

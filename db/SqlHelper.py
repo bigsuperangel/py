@@ -6,20 +6,19 @@ from sqlalchemy.orm import sessionmaker
 #from config import DB_CONFIG
 from ISqlHelper import ISqlHelper
 import os
+import pymysql
 
 DB_CONFIG={
 
     'DB_CONNECT_TYPE':'sqlalchemy',#'pymongo'sqlalchemy
     # 'DB_CONNECT_STRING':'mongodb://localhost:27017/'
-    'DB_CONNECT_STRING':'sqlite:///'+os.path.dirname(__file__)+'/data/proxy.db'
-    #'DB_CONNECT_STRING' : 'mysql+mysqldb://root:login@192.168.0.114/night?charset=utf8'
-
-
+    # 'DB_CONNECT_STRING':'sqlite:///'+os.path.dirname(__file__)+'/data/proxy.db'
+    'DB_CONNECT_STRING' : 'mysql+mysqlconnector://root:login@192.168.0.114/fund?charset=utf8'
 }
 
 BaseModel = declarative_base()
 class Proxy(BaseModel):
-    __tablename__='test'
+    __tablename__='tb_manager'
     id = Column(Integer, primary_key=True)
     establishDate = Column(BigInteger,default=0)
     fundCount = Column(Integer,default=0)
@@ -167,7 +166,8 @@ class SqlHelper(ISqlHelper):
         else:
             return query.order_by(Proxy.id.asc()).all()
 
-
+    def select2(self, conditions):
+        return self.session.query(Proxy.id,Proxy.url,Proxy.managerName).filter(conditions).all()
 
     def close(self):
         pass
@@ -175,6 +175,9 @@ class SqlHelper(ISqlHelper):
 if __name__=='__main__':
 
     sqlhelper = SqlHelper()
+    # result = sqlhelper.select(conditions={'id':'1611091720105188'})
+    result = sqlhelper.select2('registerDate>1484611200000')
+
     # sqlhelper.init_db()
 
     #### 测试插入数据
@@ -188,7 +191,7 @@ if __name__=='__main__':
     #         sqlhelper.insert(x)
     #     sqlhelper.commit()
 
-    print(sqlhelper.select(count=10))
+    print(result)
 
 
 
