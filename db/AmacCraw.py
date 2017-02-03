@@ -15,6 +15,7 @@ import multiprocessing
 from urllib import request
 import proxy
 import traceback
+import pickle
 
 
 class AmacCraw(object):
@@ -292,30 +293,58 @@ class AmacCraw(object):
         for r in records :
           self.crawFund(r[1],r[2])
 
+    def replaceFunds(self,params):
+        print(params)
+        records = self.mysqlDb.selectAllMP(params)
+        for r in records :
+            try:
+                data = self.fundUrl(r[1])
+                if len(data)>0:
+                    self.mysqlDb.replaceFund(data)
+            except Exception as e:
+                print(traceback.format_exc())
+
     def testCraw(self,r):
         print("产品请求%s"%r[1])
         try:
             data = self.fundUrl(r[1])
         except Exception as e:
-            print(e)
+            print(traceback.format_exc())
 
     def craw_list(self):
         sqlHelper = SqlHelper()
         count = 0
         try:
+            arr = []
             for i in range(9):
                 data = craw.urls(i)
                 for x in data['content']:
                     result = sqlHelper.select(conditions={'id':x['id']})
                     if len(result)>0:
+                        if result[0][3]!=x['fundCount']:
+                            arr.append((x['id'],x['url'],x['managerName'],x['fundCount'],result[0][3]))
+                            r = sqlHelper.update({'id':x['id']},{'fundCount':x['fundCount']})
+                            print(x['id'],x['managerName'],x['fundCount'],result[0][3],r['updateNum'])
                         continue
                     else:
                         sqlHelper.insert(x)
                         count = count +1
                 sqlHelper.commit()
             print("共新增tb_manager%s条"%count)
+            f = open('dump.txt', 'wb')
+            pickle.dump(arr, f)
+            f.close()
         except Exception as e:
             print(traceback.format_exc())
+
+    def updateMP(self,data):
+        for x in data:
+            L,resumes,situations,productA,productB = self.managerUrl(x[1])
+
+            for rec in productA:
+                self.mysqlDb.replaceMP(rec)
+            for rec in productB:
+                self.mysqlDb.replaceMP(rec)
 
 def run(cls_instance, data):
     return cls_instance.crawFunds(data)
@@ -339,9 +368,18 @@ if __name__=='__main__':
     ### 处理list
     # craw.craw_list()
 
+    ### 处理更新list中的基金数量变化
+    # f = open('dump.txt', 'rb')
+    # d = pickle.load(f)
+    # f.close()
+    # print(d)
+    # craw.updateMP(d)
+
     ### 处理manager_detail,查询当天过后的新增数据
-    craw.craw('registerDate>1484611200000')
+    # craw.craw('registerDate>1484611200000')
     ### 处理fund
+    craw.replaceFunds((0,1000))
+
 
 
 
