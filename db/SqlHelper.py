@@ -152,7 +152,7 @@ class SqlHelper(ISqlHelper):
         else:
             conditions=[]
 
-        query = self.session.query(Proxy.id,Proxy.url,Proxy.managerName)
+        query = self.session.query(Proxy.id,Proxy.url,Proxy.managerName,Proxy.fundCount)
         if len(conditions)>0 and count:
             for condition in conditions:
                 query = query.filter(condition)
@@ -167,7 +167,7 @@ class SqlHelper(ISqlHelper):
             return query.order_by(Proxy.id.asc()).all()
 
     def select2(self, conditions):
-        return self.session.query(Proxy.id,Proxy.url,Proxy.managerName).filter(conditions).all()
+        return self.session.query(Proxy.id,Proxy.url,Proxy.managerName,Proxy.fundCount).filter(conditions).all()
 
     def close(self):
         pass
@@ -175,9 +175,10 @@ class SqlHelper(ISqlHelper):
 if __name__=='__main__':
 
     sqlhelper = SqlHelper()
-    # result = sqlhelper.select(conditions={'id':'1611091720105188'})
-    result = sqlhelper.select2('registerDate>1484611200000')
-
+    # result = sqlhelper.select(conditions={'registerDate>:registerDate':'registerDate=1484611200000'})
+    # result = sqlhelper.select2('registerDate>1484611200000')
+    result = sqlhelper.update({'id':'1609080127100152'},{'fundCount':1})
+    print(result)
     # sqlhelper.init_db()
 
     #### 测试插入数据
@@ -191,7 +192,7 @@ if __name__=='__main__':
     #         sqlhelper.insert(x)
     #     sqlhelper.commit()
 
-    print(result)
+
 
 
 

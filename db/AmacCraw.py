@@ -295,6 +295,7 @@ class AmacCraw(object):
 
     def replaceFunds(self,params):
         print(params)
+        errs = []
         records = self.mysqlDb.selectAllMP(params)
         for r in records :
             try:
@@ -302,7 +303,14 @@ class AmacCraw(object):
                 if len(data)>0:
                     self.mysqlDb.replaceFund(data)
             except Exception as e:
+                errs.append(r[1])
                 print(traceback.format_exc())
+
+        print("共错误%s条"%len(errs))
+        f = open('errs.txt', 'wb')
+        pickle.dump(errs, f)
+        f.close()
+
 
     def testCraw(self,r):
         print("产品请求%s"%r[1])
@@ -327,7 +335,7 @@ class AmacCraw(object):
                             print(x['id'],x['managerName'],x['fundCount'],result[0][3],r['updateNum'])
                         continue
                     else:
-                        sqlHelper.insert(x)
+                        # sqlHelper.insert(x)
                         count = count +1
                 sqlHelper.commit()
             print("共新增tb_manager%s条"%count)
@@ -345,6 +353,26 @@ class AmacCraw(object):
                 self.mysqlDb.replaceMP(rec)
             for rec in productB:
                 self.mysqlDb.replaceMP(rec)
+
+    def updateFund(self):
+        errs = []
+        f = open('errs2.txt', 'rb')
+        d = pickle.load(f)
+        f.close()
+        print(d)
+        for r in d :
+            try:
+                data = self.fundUrl(r)
+                if len(data)>0:
+                    self.mysqlDb.replaceFund(data)
+            except Exception as e:
+                errs.append(r)
+                print(traceback.format_exc())
+
+        print("共错误%s条"%len(errs))
+        f = open('errs.txt', 'wb')
+        pickle.dump(errs, f)
+        f.close()
 
 def run(cls_instance, data):
     return cls_instance.crawFunds(data)
@@ -378,7 +406,8 @@ if __name__=='__main__':
     ### 处理manager_detail,查询当天过后的新增数据
     # craw.craw('registerDate>1484611200000')
     ### 处理fund
-    craw.replaceFunds((0,1000))
+    # craw.replaceFunds((0,1000))
+    craw.updateFund()
 
 
 

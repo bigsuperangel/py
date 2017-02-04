@@ -44,10 +44,24 @@ class MysqlDb(object):
         # 提交事务:
         self.conn.commit()
 
+    def replaceMP(self,data):
+        # 插入一行记录，注意MySQL的占位符是%s:
+        self.cursor.execute('replace INTO tb_manager_product ( productName, url, pid,TYPE)  VALUES (%s, %s,%s,%s) ', data)
+        print('tb_manager_product,rowcount =', self.cursor.rowcount)
+        # 提交事务:
+        self.conn.commit()
+
 
     def insertFund(self,data):
         # 插入一行记录，注意MySQL的占位符是%s:
         self.cursor.execute('INSERT INTO tb_fund ( id, fundName, fundNo, establishDate, recordDate, step, fundType, currency, managerName,managerId, managerType, hostName, fundAreas, status, lastUpdate, tip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ', data)
+        print('tb_fund,rowcount =', self.cursor.rowcount)
+        # 提交事务:
+        self.conn.commit()
+
+    def replaceFund(self,data):
+        # 插入一行记录，注意MySQL的占位符是%s:
+        self.cursor.execute('replace INTO tb_fund ( id, fundName, fundNo, establishDate, recordDate, step, fundType, currency, managerName,managerId, managerType, hostName, fundAreas, status, lastUpdate, tip) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ', data)
         print('tb_fund,rowcount =', self.cursor.rowcount)
         # 提交事务:
         self.conn.commit()
