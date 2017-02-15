@@ -93,8 +93,7 @@ class Html_Parser(object):
                 print(result.split('：')[1])
                 company['stockholderCount']=result.split('：')[1]
             if result.find('办公地点')> -1:
-                print(result.split(':')[1])
-                company['officeAddress']=result.split('：')[1]
+                company['officeAddress']=result.split(':')[1]
             if result.find('联系电话')> -1:
                 print(result.split('：')[1])
                 company['phone']=result.split('：')[1]
@@ -113,6 +112,12 @@ class Html_Parser(object):
 
         product['logo'] = d(".cy-icon-box img").attr("src")
         product['cpName'] = d(".cy-cp-name").text()
+
+        tags = []
+        for item in d(".cy-tag-list ul").children().items():
+            tags.append(item.text())
+
+        print(tags)
         # 图片列表
         imgs = []
         for item in d(".gallery-img-box").children().items():
@@ -134,7 +139,7 @@ class Html_Parser(object):
                     dic[cols[index]] = td.text()
                 changes.append(dic)
             print(changes)
-            return type,changes,company,imgs,prodcut
+            return type,changes,company,imgs,product,tags
 
         if type == 1 :
             product['advantage'] = d("#advantage").parent().find(".cy-cp-advantage").text()
@@ -150,7 +155,7 @@ class Html_Parser(object):
                 dic['pid']= pid
                 teams.append(dic)
             print(teams)
-            return type,teams,company,imgs,prodcut
+            return type,teams,company,imgs,product,tags
 
         # print(product)
 
