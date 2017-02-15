@@ -14,6 +14,7 @@ DB_CONFIG={
     # 'DB_CONNECT_STRING':'mongodb://localhost:27017/'
     # 'DB_CONNECT_STRING':'sqlite:///'+os.path.dirname(__file__)+'/data/proxy.db'
     'DB_CONNECT_STRING' : 'mysql+mysqlconnector://root:login@192.168.0.114/fund?charset=utf8'
+    # 'DB_CONNECT_STRING' : 'mysql+mysqlconnector://howetop:howetop888@rdsz5k34ap6zt113nd46public.mysql.rds.aliyuncs.com/fjsimu?charset=utf8'
 }
 
 BaseModel = declarative_base()

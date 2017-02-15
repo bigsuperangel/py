@@ -335,7 +335,7 @@ class AmacCraw(object):
                             print(x['id'],x['managerName'],x['fundCount'],result[0][3],r['updateNum'])
                         continue
                     else:
-                        # sqlHelper.insert(x)
+                        sqlHelper.insert(x)
                         count = count +1
                 sqlHelper.commit()
             print("共新增tb_manager%s条"%count)
@@ -394,7 +394,7 @@ if __name__=='__main__':
     # print('All subprocesses done.')
 
     ### 处理list
-    # craw.craw_list()
+    craw.craw_list()
 
     ### 处理更新list中的基金数量变化
     # f = open('dump.txt', 'rb')
@@ -407,7 +407,7 @@ if __name__=='__main__':
     # craw.craw('registerDate>1484611200000')
     ### 处理fund
     # craw.replaceFunds((0,1000))
-    craw.updateFund()
+    # craw.updateFund()
 
 
 

@@ -10,6 +10,7 @@ import mysql.connector
 
 class MysqlDb(object):
     def __init__(self):
+        # self.conn = mysql.connector.connect(host = "rdsz5k34ap6zt113nd46public.mysql.rds.aliyuncs.com",user='howetop', password='howetop888', database='fjsimu')
         self.conn = mysql.connector.connect(host = "192.168.0.114",user='root', password='login', database='fund')
         self.cursor = self.conn.cursor()
 
