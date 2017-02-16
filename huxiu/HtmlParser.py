@@ -6,7 +6,7 @@ from lxml import etree
 import pickle
 import SqlHelper
 import re
-
+import traceback
 
 class Html_Parser(object):
 
@@ -40,10 +40,8 @@ class Html_Parser(object):
 
         return L
 
-    def parse_detail(self):
-        f = open('detail2', 'rb')
-        cont = pickle.load(f)
-        f.close()
+    def parse_detail(self,cont):
+
         d = pq(cont)
 
         pid = d("#item-id").val()
@@ -56,49 +54,35 @@ class Html_Parser(object):
             result = item.text()
             print(result)
             if result.find('创始人')> -1:
-                print(result.split('：')[1])
                 company['initiator']=result.split('：')[1]
             if result.find('网址')> -1:
-                print(result.split('：')[1])
                 company['companyUrl']=result.split('：')[1]
             if result.find('融资')> -1:
-                print(result.split('：')[1])
                 company['step']=result.split('：')[1]
             if result.find('地址')> -1:
-                print(result.split('：')[1])
                 company['address']=result.split('：')[1]
             if result.find('员工')> -1:
-                print(result.split('：')[1])
                 company['employeeCount']=result.split('：')[1]
-            if result.find('公司')> -1:
-                print(result.split('：')[1])
+            if result.find('公司：')> -1:
                 company['companyName']=result.split('：')[1]
             if result.find('法定代表')> -1:
-                print(result.split('：')[1])
                 company['legal']=result.split('：')[1]
             if result.find('公司类型')> -1:
-                print(result.split('：')[1])
                 company['companyType']=result.split('：')[1]
             if result.find('成立时间')> -1:
-                print(result.split('：')[1])
                 company['establishDate']=result.split('：')[1]
 
             if result.find('注册资本')> -1:
-                print(result.split('：')[1])
                 company['regCapital']=result.split('：')[1]
             if result.find('注册时间')> -1:
-                print(result.split('：')[1])
                 company['regDate']=result.split('：')[1]
             if result.find('当前股东人数')> -1:
-                print(result.split('：')[1])
                 company['stockholderCount']=result.split('：')[1]
             if result.find('办公地点')> -1:
                 company['officeAddress']=result.split(':')[1]
             if result.find('联系电话')> -1:
-                print(result.split('：')[1])
                 company['phone']=result.split('：')[1]
             if result.find('电子邮箱')> -1:
-                print(result.split('：')[1])
                 company['email']=result.split('：')[1]
 
 
@@ -110,6 +94,7 @@ class Html_Parser(object):
                 type = 2
                 break
 
+        product['id'] = pid
         product['logo'] = d(".cy-icon-box img").attr("src")
         product['cpName'] = d(".cy-cp-name").text()
 
@@ -117,11 +102,13 @@ class Html_Parser(object):
         for item in d(".cy-tag-list ul").children().items():
             tags.append(item.text())
 
-        print(tags)
+        product['tags']=",".join(tags)
         # 图片列表
         imgs = []
         for item in d(".gallery-img-box").children().items():
-            imgs.append(item.find('img').attr("src"))
+            dic = {'pid':pid}
+            dic['url']=item.find('img').attr("src")
+            imgs.append(dic)
 
         if type == 2 :
             product['publishDate'] = d(".cy-xq-time").text().split('：')[1]
@@ -137,14 +124,16 @@ class Html_Parser(object):
                 dic = {}
                 for index,td in enumerate(x.children().items()):
                     dic[cols[index]] = td.text()
+                dic["pid"]= pid
                 changes.append(dic)
-            print(changes)
-            return type,changes,company,imgs,product,tags
+            return type,changes,company,imgs,product
 
         if type == 1 :
             product['advantage'] = d("#advantage").parent().find(".cy-cp-advantage").text()
             product['results'] = d("#results").parent().find(".cy-cp-advantage").text()
 
+            if d(".cy-special-li") != None:
+                company['financing'] = d(".cy-special-li").text()
             # 团队列表
             teams = []
             for x in d(".cy-cp-team").children().items():
@@ -154,10 +143,9 @@ class Html_Parser(object):
                 dic['personIntro'] = x(".team-personnel-intro").text()
                 dic['pid']= pid
                 teams.append(dic)
-            print(teams)
-            return type,teams,company,imgs,product,tags
+            return type,teams,company,imgs,product
 
-        # print(product)
+        print(product)
 
     def parse(self):
         f = open('huxiu.txt', 'rb')
@@ -166,7 +154,11 @@ class Html_Parser(object):
 
         return self.parse_list(cont)
 
+
 if __name__=='__main__':
     p = Html_Parser()
     # rows = p.parse()
-    p.parse_detail()
+    f = open('3063.txt', 'rb')
+    cont = pickle.load(f)
+    f.close()
+    p.parse_detail(cont)
