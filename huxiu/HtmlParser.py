@@ -1,4 +1,4 @@
-#coding:utf-8
+# coding:utf-8
 
 import os
 from pyquery import PyQuery as pq
@@ -8,9 +8,10 @@ import SqlHelper
 import re
 import traceback
 
+
 class Html_Parser(object):
 
-    def parse_list(self,response):
+    def parse_list(self, response):
         '''
         获取私募基金公示信息
         '''
@@ -26,21 +27,21 @@ class Html_Parser(object):
             url = box(".cy-cp-name").parent('a').attr('href')
             m = re.match(r'/chuangye/product/(\d+)/.*?', url)
             id = m.group(1)
-            dic['title']=name
-            dic['imgUrl']=img
+            dic['title'] = name
+            dic['imgUrl'] = img
             dic['href'] = url
             dic['intro'] = info
-            dic['id']=id
+            dic['id'] = id
 
-            cols = ['industry','city','step']
+            cols = ['industry', 'city', 'step']
             for i, item in enumerate(box(".cy-cp-tag ul").children().items()):
-                dic[cols[i]]=item.text().split('：')[1]
+                dic[cols[i]] = item.text().split('：')[1]
 
             L.append(dic)
 
         return L
 
-    def parse_detail(self,cont):
+    def parse_detail(self, cont):
 
         d = pq(cont)
 
@@ -49,48 +50,49 @@ class Html_Parser(object):
 
         # 处理公司信息
         company = {}
-        company['pid']=pid
+        company['pid'] = pid
         for item in d(".box-moder ul").children('li').items():
             result = item.text()
+            result = result.replace(" ","").replace(":","：")
             print(result)
-            if result.find('创始人')> -1:
-                company['initiator']=result.split('：')[1]
-            if result.find('网址')> -1:
-                company['companyUrl']=result.split('：')[1]
-            if result.find('融资')> -1:
-                company['step']=result.split('：')[1]
-            if result.find('地址')> -1:
-                company['address']=result.split('：')[1]
-            if result.find('员工')> -1:
-                company['employeeCount']=result.split('：')[1]
-            if result.find('公司：')> -1:
-                company['companyName']=result.split('：')[1]
-            if result.find('法定代表')> -1:
-                company['legal']=result.split('：')[1]
-            if result.find('公司类型')> -1:
-                company['companyType']=result.split('：')[1]
-            if result.find('成立时间')> -1:
-                company['establishDate']=result.split('：')[1]
+            if result.find('创始人：') > -1:
+                company['initiator'] = result.split('：')[1]
+            if result.find('网址：') > -1:
+                company['companyUrl'] = result.split('：')[1]
+            if result.find('融资：') > -1:
+                company['step'] = result.split('：')[1]
+            if result.find('地址：') > -1:
+                company['address'] = result.split('：')[1]
+            if result.find('员工：') > -1:
+                company['employeeCount'] = result.split('：')[1]
+            if result.find('公司：') > -1 :
+                company['companyName'] = result.split('：')[1]
+            if result.find('法定代表：') > -1:
+                company['legal'] = result.split('：')[1]
+            if result.find('公司类型：') > -1:
+                company['companyType'] = result.split('：')[1]
+            if result.find('成立时间：') > -1:
+                company['establishDate'] = result.split('：')[1]
+            if result.find('注册资本：') > -1:
+                company['regCapital'] = result.split('：')[1]
+            if result.find('注册时间：') > -1:
+                company['regDate'] = result.split('：')[1]
+            if result.find('当前股东人数：') > -1:
+                company['stockholderCount'] = result.split('：')[1]
+            if result.find('办公地点：') > -1:
+                company['officeAddress'] = result.split('：')[1]
+            if result.find('联系电话：') > -1:
+                company['phone'] = result.split('：')[1]
+            if result.find('电子邮箱：') > -1:
+                company['email'] = result.split('：')[1]
 
-            if result.find('注册资本')> -1:
-                company['regCapital']=result.split('：')[1]
-            if result.find('注册时间')> -1:
-                company['regDate']=result.split('：')[1]
-            if result.find('当前股东人数')> -1:
-                company['stockholderCount']=result.split('：')[1]
-            if result.find('办公地点')> -1:
-                company['officeAddress']=result.split(':')[1]
-            if result.find('联系电话')> -1:
-                company['phone']=result.split('：')[1]
-            if result.find('电子邮箱')> -1:
-                company['email']=result.split('：')[1]
-
+        print(company)
 
         product = {}
 
         type = 1
         for x in d(".cy-cp-nav ul").children().items():
-            if x.text().find('经营范围')>-1:
+            if x.text().find('经营范围') > -1:
                 type = 2
                 break
 
@@ -102,35 +104,40 @@ class Html_Parser(object):
         for item in d(".cy-tag-list ul").children().items():
             tags.append(item.text())
 
-        product['tags']=",".join(tags)
+        product['tags'] = ",".join(tags)
         # 图片列表
         imgs = []
         for item in d(".gallery-img-box").children().items():
-            dic = {'pid':pid}
-            dic['url']=item.find('img').attr("src")
+            dic = {'pid': pid}
+            dic['url'] = item.find('img').attr("src")
             imgs.append(dic)
 
-        if type == 2 :
+        if type == 2:
             product['publishDate'] = d(".cy-xq-time").text().split('：')[1]
             product['cpIntroInfo'] = d(".cy-cp-intro-info").text()
-            product['bizScope'] = d("#business").parent().find(".cy-cp-advantage").text()
-            product['shareholders'] = d("#shareholders").parent().find(".cy-cp-advantage").text()
+            product['bizScope'] = d("#business").parent().find(
+                ".cy-cp-advantage").text()
+            product['shareholders'] = d("#shareholders").parent().find(
+                ".cy-cp-advantage").text()
             product['type'] = 2
 
-            ###### 变更table
+            # 变更table
             changes = []
-            cols = ["sort","changeDate","changeItems","beforeChange","afterChange"]
+            cols = ["sort", "changeDate", "changeItems",
+                    "beforeChange", "afterChange"]
             for x in d(".tree-table tbody").children().items():
                 dic = {}
-                for index,td in enumerate(x.children().items()):
+                for index, td in enumerate(x.children().items()):
                     dic[cols[index]] = td.text()
-                dic["pid"]= pid
+                dic["pid"] = pid
                 changes.append(dic)
-            return type,changes,company,imgs,product
+            return type, changes, company, imgs, product
 
-        if type == 1 :
-            product['advantage'] = d("#advantage").parent().find(".cy-cp-advantage").text()
-            product['results'] = d("#results").parent().find(".cy-cp-advantage").text()
+        if type == 1:
+            product['advantage'] = d("#advantage").parent().find(
+                ".cy-cp-advantage").text()
+            product['results'] = d("#results").parent().find(
+                ".cy-cp-advantage").text()
 
             if d(".cy-special-li") != None:
                 company['financing'] = d(".cy-special-li").text()
@@ -141,11 +148,10 @@ class Html_Parser(object):
                 dic['personName'] = x(".team-personnel-name").text()
                 dic['personPosition'] = x(".team-personnel-position").text()
                 dic['personIntro'] = x(".team-personnel-intro").text()
-                dic['pid']= pid
+                dic['pid'] = pid
                 teams.append(dic)
-            return type,teams,company,imgs,product
+            return type, teams, company, imgs, product
 
-        print(product)
 
     def parse(self):
         f = open('huxiu.txt', 'rb')
@@ -155,10 +161,10 @@ class Html_Parser(object):
         return self.parse_list(cont)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     p = Html_Parser()
     # rows = p.parse()
-    f = open('3063.txt', 'rb')
+    f = open('detail', 'rb')
     cont = pickle.load(f)
     f.close()
     p.parse_detail(cont)

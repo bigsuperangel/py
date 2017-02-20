@@ -1,4 +1,4 @@
-#coding:utf-8
+# -*- coding: utf-8 -*-
 
 import os
 import random
@@ -50,13 +50,13 @@ class Craw(object):
                 cont = self.downloader.download_detail(url)
                 type,teams,company,imgs,product = self.parser.parse_detail(cont)
                 SqlHelper.saveCompany(**company)
-                SqlHelper.batchSaveImgs(imgs)
-                SqlHelper.saveProDetail(**product)
-                if type==1 :
-                    SqlHelper.batchSaveTeams(teams)
-                if type==2 :
-                    SqlHelper.batchSaveChanges(teams)
-                time.sleep(random.randrange(3,6))
+                # SqlHelper.batchSaveImgs(imgs)
+                # SqlHelper.saveProDetail(**product)
+                # if type==1 :
+                #     SqlHelper.batchSaveTeams(teams)
+                # if type==2 :
+                #     SqlHelper.batchSaveChanges(teams)
+                # time.sleep(random.randrange(3,6))
             except Exception as e:
                 print("err:%s"%url)
                 errs.append(url)
@@ -78,23 +78,23 @@ class Craw(object):
             break
 
     def craw_one(self):
-        s = "/chuangye/product/3063/邮洽"
+        s = "/chuangye/product/59810/IronBot"
         index = s.rindex("/")
         url = "https://www.huxiu.com"+s[:index+1]+quote(s[index+1:])
         print(url)
         try:
             cont = self.downloader.download_detail(url)
-            f = open('3063.txt', 'wb')
-            pickle.dump(cont, f)
-            f.close()
+            # f = open('3063.txt', 'wb')
+            # pickle.dump(cont, f)
+            # f.close()
             type,teams,company,imgs,product = self.parser.parse_detail(cont)
-            # SqlHelper.saveCompany(**company)
-            SqlHelper.batchSaveImgs(imgs)
-            SqlHelper.saveProDetail(**product)
-            if type==1 :
-                SqlHelper.batchSaveTeams(teams)
-            if type==2 :
-                SqlHelper.batchSaveChanges(teams)
+            SqlHelper.saveCompany(**company)
+            # SqlHelper.batchSaveImgs(imgs)
+            # SqlHelper.saveProDetail(**product)
+            # if type==1 :
+            #     SqlHelper.batchSaveTeams(teams)
+            # if type==2 :
+            #     SqlHelper.batchSaveChanges(teams)
         except Exception as e:
             exstr = traceback.format_exc()
             print(exstr)
@@ -109,7 +109,7 @@ if __name__=='__main__':
     ####　爬图片
     # craw.craw_pic()
 
-    # craw.craw_one()
+    craw.craw_detail()
 
 
 
