@@ -44,3 +44,4 @@ index = s.rindex("/")
 print(s[:index+1]+quote(s[index+1:]))
 
 print(random.randrange(3,6))
+print("一村大师傅")

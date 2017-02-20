@@ -49,9 +49,9 @@ class Craw(object):
             try:
                 cont = self.downloader.download_detail(url)
                 type,teams,company,imgs,product = self.parser.parse_detail(cont)
-                SqlHelper.saveCompany(**company)
+                # SqlHelper.saveCompany(**company)
                 # SqlHelper.batchSaveImgs(imgs)
-                # SqlHelper.saveProDetail(**product)
+                SqlHelper.saveProDetail(**product)
                 # if type==1 :
                 #     SqlHelper.batchSaveTeams(teams)
                 # if type==2 :

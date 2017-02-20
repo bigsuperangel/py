@@ -2,9 +2,16 @@
     "version": "0.1.0",
     "command": "python",
     "windows": {
-         "command": "D:\\develop\\running\\Python35\\python.exe"//python的安装路径
+        "command": "D:\\develop\\running\\Python35\\python.exe" //python的安装路径
     },
     "isShellCommand": true,
-    "args": ["${file}"],
-    "showOutput": "always"
+    "args": [
+        "${file}"
+    ],
+    "showOutput": "always",
+    "options": {
+        "env": {
+            "PYTHONIOENCODING": "UTF-8"
+        }
+    }
 }
