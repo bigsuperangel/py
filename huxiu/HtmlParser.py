@@ -105,6 +105,9 @@ class Html_Parser(object):
             tags.append(item.text())
 
         product['tags'] = ",".join(tags)
+        product['publishDate'] = d(".cy-xq-time").text().split('：')[1]
+        product['cpIntroInfo'] = d(".cy-cp-intro-info").text()
+
         # 图片列表
         imgs = []
         for item in d(".gallery-img-box").children().items():
@@ -113,8 +116,6 @@ class Html_Parser(object):
             imgs.append(dic)
 
         if type == 2:
-            product['publishDate'] = d(".cy-xq-time").text().split('：')[1]
-            product['cpIntroInfo'] = d(".cy-cp-intro-info").text()
             product['bizScope'] = d("#business").parent().find(
                 ".cy-cp-advantage").text()
             product['shareholders'] = d("#shareholders").parent().find(
