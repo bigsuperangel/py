@@ -33,13 +33,17 @@ class AmacCraw(object):
 
         user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
         values = {
-        'rand' : 0.9533140078801254,
+        'rand' : 0.4394049148350625,
         'page' : p,
         'size' : 50
         }
+        proxies = {
+          "http": "http://%s:%s"%(self.proxyUrl[0],self.proxyUrl[1]),
+          "https": "http://%s:%s"%(self.proxyUrl[0],self.proxyUrl[1])
+        }
         headers = { 'User-Agent' : user_agent ,'content-type':'application/json'}
         payload = {'registerProvince': '福建省'}
-        r = requests.post(self.list_url,headers=headers,params=values,json=payload)
+        r = requests.post(self.list_url,headers=headers,params=values,json=payload, proxies=proxies)
         print(r.status_code)
         return r.json()
 
@@ -48,7 +52,11 @@ class AmacCraw(object):
         获取基金介绍页
         '''
         headers = {'Host':'gs.amac.org.cn','User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36','Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8','Connection':'keep-alive','Accept-Language':'zh-CN,zh;q=0.8'}
-        d = pq(url=os.path.join(self.manager_url,href),encoding="utf-8",headers=headers)
+        proxies = {
+          "http": "http://%s:%s"%(self.proxyUrl[0],self.proxyUrl[1]),
+          "https": "http://%s:%s"%(self.proxyUrl[0],self.proxyUrl[1])
+        }
+        d = pq(url=os.path.join(self.manager_url,href),encoding="utf-8", timeout=5 ,headers=headers, proxies=proxies)
         L = []
 
         pid = os.path.splitext(href)[0]
@@ -207,7 +215,7 @@ class AmacCraw(object):
 
         proxies = {
           "http": "http://%s:%s"%(self.proxyUrl[0],self.proxyUrl[1]),
-          "https": "http://%s:%s"%(self.proxyUrl[0],self.proxyUrl[1]),
+          "https": "http://%s:%s"%(self.proxyUrl[0],self.proxyUrl[1])
         }
 
         r = requests.get(os.path.join(self.fund_url,href), timeout=5 ,headers=headers, proxies=proxies)
@@ -266,13 +274,15 @@ class AmacCraw(object):
         sqlhelper = SqlHelper()
         record = sqlhelper.select2(condition)
         for r in record:
-
-            print("请求%s"%r[0])
-            result = self.isExistManager(r[0])  ####判断是否请求过
-            if len(result)>0:
-                continue
-            else:
-                self.craw_one(r[1])
+            try:
+                print("请求%s"%r[0])
+                result = self.isExistManager(r[0])  ####判断是否请求过
+                if len(result)>0:
+                    continue
+                else:
+                    self.craw_one(r[1])
+            except Exception as e:
+                print(e)
 
     def crawFund(self,href,mid):
         print("产品请求%s"%href)
@@ -380,7 +390,7 @@ def run(cls_instance, data):
 if __name__=='__main__':
 
     craw = AmacCraw()
-    # craw.crawFunds((0,1000))
+    craw.crawFunds((0,1000))
     # print('Parent process %s.' % os.getpid())
     # p = multiprocessing.Pool(multiprocessing.cpu_count())
     # records = craw.findAllMp((0,20))
@@ -394,7 +404,7 @@ if __name__=='__main__':
     # print('All subprocesses done.')
 
     ### 处理list
-    craw.craw_list()
+    # craw.craw_list()
 
     ### 处理更新list中的基金数量变化
     # f = open('dump.txt', 'rb')
@@ -404,9 +414,9 @@ if __name__=='__main__':
     # craw.updateMP(d)
 
     ### 处理manager_detail,查询当天过后的新增数据
-    # craw.craw('registerDate>1484611200000')
+    # craw.craw('registerDate>0')
     ### 处理fund
-    # craw.replaceFunds((0,1000))
+    craw.replaceFunds((0,1000))
     # craw.updateFund()
 
 
